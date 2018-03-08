@@ -9,131 +9,49 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-    <title>Team 4</title>
+    <link rel="stylesheet" href="css/app.css">
+
+    <title>COMP680 Team 4 Project</title>
   </head>
   <body>
-    <h1>Mark Kaplan and Wei Lee</h1>
-    
-    
-        <form class="needs-validation" novalidate>
-  Starting address:
-  <div class="form-row">
-    <div class="col-md-9 mb-3">
-      <label for="validationCustom02">Street Address</label>
-      <input type="text" class="form-control" id="validationCustom02" placeholder="streetAddress" required>      <div class="invalid-feedback">
-        Please provide a valid street address.
-      </div>
-    </div>
-    <div class="col-md-6 mb-3">
-      <label for="validationCustom03">City</label>
-      <input type="text" class="form-control" id="validationCustom03" placeholder="City" required>
-      <div class="invalid-feedback">
-        Please provide a valid city.
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="validationCustom04">State</label>
-      <input type="text" class="form-control" id="validationCustom04" placeholder="State" required>
-      <div class="invalid-feedback">
-        Please provide a valid state.
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="validationCustom05">Zip</label>
-      <input type="text" class="form-control" id="validationCustom05" placeholder="Zip" required>
-      <div class="invalid-feedback">
-        Please provide a valid zip.
-      </div>
-    </div>
-  </div>
-  Destination address:
-  <div class="form-row">
-    <div class="col-md-9 mb-3">
-      <label for="validationCustom06">Street Address</label>
-      <input type="text" class="form-control" id="validationCustom06" placeholder="streetAddress" required>
-      <div class="invalid-feedback">
-        Please provide a valid street address.
-      </div>
-    </div>
-    <div class="col-md-6 mb-3">
-      <label for="validationCustom07">City</label>
-      <input type="text" class="form-control" id="validationCustom07" placeholder="City" required>
-      <div class="invalid-feedback">
-        Please provide a valid city.
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="validationCustom08">State</label>
-      <input type="text" class="form-control" id="validationCustom08" placeholder="State" required>
-      <div class="invalid-feedback">
-        Please provide a valid state.
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="validationCustom09">Zip</label>
-      <input type="text" class="form-control" id="validationCustom09" placeholder="Zip" required>
-      <div class="invalid-feedback">
-        Please provide a valid zip.
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>
-      <label class="form-check-label" for="invalidCheck">
-        Agree to terms and conditions
-      </label>
-      <div class="invalid-feedback">
-        You must agree before submitting.
-      </div>
-    </div>
-  </div>
-  <button class="btn btn-primary" type="submit">Submit form</button>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-4">
+          <h1>COMP680 Team 4 Project</h1>
+          <p class="lead">by Mark Kaplan and Wei Lee</p>
 
-  
-  <div class="form-group">
-    <label for="exampleFormControlSelect1">Please select the day of the week you want to travel</label>
-    <select class="form-control" id="exampleFormControlSelect1">
-      <option>Monday</option>
-      <option>Tuesday</option>
-      <option>Wednesday</option>
-      <option>Thursday</option>
-      <option>Friday</option>
-      <option>Saturday</option>
-      <option>Sunday</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label for="exampleFormControlSelect2">Please select the time of the day you want to travel</label>
-    <select multiple class="form-control" id="exampleFormControlSelect2">
-      <option>6-8am</option>
-      <option>8-10am</option>
-      <option>10-12am</option>
-      <option>12am-2pm</option>
-      <option>2-4pm</option>
-      <option>4-6pm</option>
-      <option>6-8pm</option>
-      <option>8pm-12am</option>
-      <option>12-6am</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label for="exampleFormControlTextarea1">Example textarea</label>
-    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-  </div>
-      <div class="col-auto my-1">
-      <button type="submit" class="btn btn-primary">Submit</button>
+          <p>This application currently uses the Google Maps API to determine the estimated travel time between two locations given the current traffic.</p>
+
+          <form>
+            <div class="form-group">
+              <label for="start">Start</label>
+              <input type="text" class="form-control" id="start" value="Los Angeles, CA">
+            </div>
+
+            <div class="form-group">
+              <label for="end">End</label>
+              <input type="text" class="form-control" id="end" value="San Diego, CA">
+            </div>
+
+            <button class="btn btn-primary" type="button" id="buttonGetEstimatedTravelTime">Get estimated travel time</button>
+          </form>
+
+          <div id="output"></div>
+          <!-- Left -->
+        </div>
+        <div class="col-sm">
+          <!-- Right -->
+          <div id="map"></div>
+        </div>
+      </div>
     </div>
-<div class="alert alert-info">
-  <strong>Info!</strong> Indicates a neutral informative change or action.
-</div>
 
-</form>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <script src="js/app.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg58ZwS14QvkYzZgutRwgdLO5D3LzyoWg&callback=initMap" async defer></script>
   </body>
 </html>
