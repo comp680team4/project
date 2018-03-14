@@ -1,6 +1,119 @@
+"use strict";
+
+var WINDOW_START = new Date(Date.now() + 0); // current time
+var WINDOW_END = new Date(Date.now() + (60 * 60 * 1000 * 6)); // 6 hours from now
+var WINDOW_INCREMENT = 60 * 60 * 1000; // 1 hour in milliseconds
+var DATETIME_FORMAT = 'dddd, MMMM Do [at] h:mm a';
+
+/**
+ * Get the duration (with traffic) from a DirectionsResult object
+ *
+ * @param  {Object} response DirectionsResult object
+ * @return {string}          Duration in traffic
+ */
+function getDuration(response) {
+  return response.routes[0].legs[0].duration_in_traffic;
+}
+
+/**
+ * Get the estimated travel time between two locations at a given date and time
+ *
+ * @param  {DirectionsService} directionsService DirectionsService object
+ * @param  {string} startLocation     Start location
+ * @param  {string} endLocation       End location
+ * @param  {Date} dateTime            Departure time
+ * @return {Object}                   Result object
+ */
+function getEstimatedTravelTime(directionsService, startLocation, endLocation, dateTime) {
+  console.log('Getting estimated travel time for a ' + moment(dateTime).format(DATETIME_FORMAT) + ' departure');
+  return new Promise(function(resolve, reject) {
+    directionsService.route({
+      origin: startLocation,
+      destination: endLocation,
+      travelMode: 'DRIVING',
+      provideRouteAlternatives: false,
+      drivingOptions: {
+        departureTime: dateTime,
+        trafficModel: 'bestguess'
+      }
+    }, function(response, status) {
+      if (status === 'OK') {
+        console.log('Got the estimated travel time for a ' + moment(dateTime).format(DATETIME_FORMAT) + ' departure');
+
+        // upon successful request, resolve response
+        resolve({
+          dateTime: dateTime,
+          response: response,
+          duration: getDuration(response).value,
+          durationText: getDuration(response).text
+        });
+        // resolve(response);
+      } else {
+        // else reject with status
+        reject(status);
+      }
+    });
+  });
+}
+
+/**
+ * Run the algorithm to determine the time of day / day of week that will give
+ * you the shortest estimated travel time with traffic for a given trip
+ *
+ * @param  {DirectionsService} directionsService DirectionsService object
+ * @param  {DirectionsDisplay} directionsDisplay DirectionsDisplay object
+ */
+function runAlgorithm(directionsService, directionsDisplay) {
+  var startLocation = document.getElementById('start').value;
+  var endLocation = document.getElementById('end').value;
+
+  $('#output').html('<div class="alert alert-secondary">Running...</div>');
+
+  console.log("Running algorithm");
+  console.log("Start location:\t" + startLocation);
+  console.log("End location:\t" + endLocation);
+
+  var currentDateTime = WINDOW_START;
+  var results = [];
+  var sequence = [];
+
+  while (currentDateTime <= WINDOW_END) {
+    sequence.push(getEstimatedTravelTime(directionsService, startLocation, endLocation, currentDateTime));
+  	currentDateTime = new Date(currentDateTime.getTime() + WINDOW_INCREMENT);
+  }
+
+  // Promise that resolves when all requests have completed
+  Promise.all(sequence).then(function(results) {
+    console.log('Results');
+    console.log(results);
+
+    console.log('Departure time\t\t\t\t\t\tDuration');
+    results.forEach(function(result) {
+      console.log(moment(result.dateTime).format(DATETIME_FORMAT) + '\t\t\t' + result.durationText);
+    });
+
+    console.log('Finding the shortest duration');
+    var bestTravelTime = _.min(results, 'duration');
+    console.log(bestTravelTime);
+
+    directionsDisplay.setDirections(bestTravelTime.response);
+    $('#output').html('<div class="alert alert-success">The best time to leave is <strong>' + moment(bestTravelTime.dateTime).format(DATETIME_FORMAT) + '</strong>. Your travel time will be ' + bestTravelTime.durationText + ' with traffic.</div>');
+
+  }).catch(function(err) {
+    // catch any error that happened along the way
+    console.error("ERROR: " + err.message);
+    console.error(err);
+    $('#output').html('<div class="alert alert-danger">Uh oh: ' + err.message + '</div>');
+  })
+}
+
 var map;
 
-// Based on https://developers.google.com/maps/documentation/javascript/examples/directions-simple
+/**
+ * Initialize the Google Map
+ *
+ * Based on https://developers.google.com/maps/documentation/javascript/examples/directions-simple
+ */
 function initMap() {
   var directionsService = new google.maps.DirectionsService;
   var directionsDisplay = new google.maps.DirectionsRenderer;
@@ -10,42 +123,24 @@ function initMap() {
   });
   directionsDisplay.setMap(map);
 
-  // Show traffic layer
-  // var trafficLayer = new google.maps.TrafficLayer();
-  // trafficLayer.setMap(map);
+  var runAlgorithmHandler = function() {
+    runAlgorithm(directionsService, directionsDisplay);
+  }
 
-  var onChangeHandler = function() {
-    console.log('Start or end location changed');
-    calculateAndDisplayRoute(directionsService, directionsDisplay);
-  };
+  document.getElementById('runButton').addEventListener('click', runAlgorithmHandler);
 
-  // Automatically get estimated travel time when text fields are changed
-  // document.getElementById('start').addEventListener('change', onChangeHandler); // alternatively use "input" event
-  // document.getElementById('end').addEventListener('change', onChangeHandler);
-
-  document.getElementById('buttonGetEstimatedTravelTime').addEventListener('click', onChangeHandler);
-}
-
-// Based on https://developers.google.com/maps/documentation/javascript/examples/directions-simple
-function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-  directionsService.route({
-    origin: document.getElementById('start').value,
-    destination: document.getElementById('end').value,
-    travelMode: 'DRIVING',
-    drivingOptions: {
-      departureTime: new Date(Date.now() + 0),  // for the time N milliseconds from now.
-      trafficModel: 'bestguess'
-    }
-
-  }, function(response, status) {
-    if (status === 'OK') {
-      console.log(response);
-      var duration = response.routes[0].legs[0].duration.text;
-      var duration_in_traffic = response.routes[0].legs[0].duration_in_traffic.text;
-      directionsDisplay.setDirections(response);
-      $('#output').html('<br><div class="alert alert-info">' + duration_in_traffic + ' with traffic</div>');
-    } else {
-      window.alert('Directions request failed due to ' + status);
-    }
-  });
+//   // Show traffic layer
+//   // var trafficLayer = new google.maps.TrafficLayer();
+//   // trafficLayer.setMap(map);
+//
+//   var onChangeHandler = function() {
+//     console.log('Start or end location changed');
+//     calculateAndDisplayRoute(directionsService, directionsDisplay);
+//   };
+//
+//   // Automatically get estimated travel time when text fields are changed
+//   // document.getElementById('start').addEventListener('change', onChangeHandler); // alternatively use "input" event
+//   // document.getElementById('end').addEventListener('change', onChangeHandler);
+//
+//   document.getElementById('runButton').addEventListener('click', onChangeHandler);
 }

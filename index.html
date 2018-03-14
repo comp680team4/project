@@ -1,10 +1,11 @@
-
 <!doctype html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="robots" content="noindex, nofollow">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -20,20 +21,20 @@
           <h1>COMP680 Team 4 Project</h1>
           <p class="lead">by Mark Kaplan and Wei Lee</p>
 
-          <p>This application currently uses the Google Maps API to determine the estimated travel time between two locations given the current traffic.</p>
+          <p>This application determines the time of day / day of week that will give you the shortest estimated travel time with traffic for a given trip.</p>
 
           <form>
             <div class="form-group">
               <label for="start">Start</label>
-              <input type="text" class="form-control" id="start" value="Los Angeles, CA">
+              <input type="text" class="form-control" id="start" value="California State University, Northridge">
             </div>
 
             <div class="form-group">
               <label for="end">End</label>
-              <input type="text" class="form-control" id="end" value="San Diego, CA">
+              <input type="text" class="form-control" id="end" value="University of Southern California">
             </div>
 
-            <button class="btn btn-primary" type="button" id="buttonGetEstimatedTravelTime">Get estimated travel time</button>
+            <button class="btn btn-primary" type="button" id="runButton">Run</button>
           </form>
 
           <div id="output"></div>
@@ -49,6 +50,10 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js"></script>
 
     <script src="js/app.js"></script>
 
