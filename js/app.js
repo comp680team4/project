@@ -1,9 +1,11 @@
 "use strict";
 
 var WINDOW_START = new Date(Date.now() + 0); // current time
-var WINDOW_END = new Date(Date.now() + (60 * 60 * 1000 * 6)); // 6 hours from now
+var WINDOW_END = new Date(Date.now() + (60 * 60 * 1000 * 72)); // 72 hours from now
 var WINDOW_INCREMENT = 60 * 60 * 1000; // 1 hour in milliseconds
 var DATETIME_FORMAT = 'dddd, MMMM Do [at] h:mm a';
+var HOUR_START = 6; // earliest time to start trip
+var HOUR_END = 20; // latest time to start trip
 
 /**
  * Get the duration (with traffic) from a DirectionsResult object
@@ -48,7 +50,16 @@ function getEstimatedTravelTime(directionsService, startLocation, endLocation, d
           durationText: getDuration(response).text
         });
         // resolve(response);
-      } else {
+        } else if (status === 'OVER_QUERY_LIMIT') {
+          console.error('Over query limit');
+          // Temporarily resolve the promise so that Promise.all doesn't fail
+          resolve({
+            dateTime: dateTime,
+            response: {},
+            duration: Infinity,
+            durationText: 'Infinity'
+          });
+        } else {
         // else reject with status
         reject(status);
       }
@@ -73,13 +84,21 @@ function runAlgorithm(directionsService, directionsDisplay) {
   console.log("Start location:\t" + startLocation);
   console.log("End location:\t" + endLocation);
 
+  var promiseThrottle = new PromiseThrottle({
+    requestsPerSecond: 1,           // up to 1 request per second
+    promiseImplementation: Promise  // the Promise library you are using
+  });
+
   var currentDateTime = WINDOW_START;
   var results = [];
+
   var sequence = [];
 
   while (currentDateTime <= WINDOW_END) {
-    sequence.push(getEstimatedTravelTime(directionsService, startLocation, endLocation, currentDateTime));
-  	currentDateTime = new Date(currentDateTime.getTime() + WINDOW_INCREMENT);
+    if (currentDateTime.getHours() >= HOUR_START && currentDateTime.getHours() <= HOUR_END) {
+      sequence.push(promiseThrottle.add(getEstimatedTravelTime.bind(this, directionsService, startLocation, endLocation, currentDateTime)));
+    }
+    currentDateTime = new Date(currentDateTime.getTime() + WINDOW_INCREMENT);
   }
 
   // Promise that resolves when all requests have completed
@@ -87,9 +106,9 @@ function runAlgorithm(directionsService, directionsDisplay) {
     console.log('Results');
     console.log(results);
 
-    console.log('Departure time\t\t\t\t\t\tDuration');
+    console.log('Departure time\t\t\t\t\t\t\tDuration');
     results.forEach(function(result) {
-      console.log(moment(result.dateTime).format(DATETIME_FORMAT) + '\t\t\t' + result.durationText);
+      console.log(moment(result.dateTime).format(DATETIME_FORMAT) + '\t\t\t\t' + result.durationText);
     });
 
     console.log('Finding the shortest duration');
