@@ -107,9 +107,14 @@ function runAlgorithm(directionsService, directionsDisplay) {
     console.log(results);
 
     console.log('Departure time\t\t\t\t\t\t\tDuration');
+    var table = '<table id="debugTable" class="table table-sm table-bordered table-striped table-hover"><thead class="thead-dark"><tr><th scope="col">Departure time</th><th scope="col">Duration</th></tr></thead><tbody>';
     results.forEach(function(result) {
       console.log(moment(result.dateTime).format(DATETIME_FORMAT) + '\t\t\t\t' + result.durationText);
+      table += '<tr><td>' + moment(result.dateTime).format('L - LT') + '</td><td>' + result.durationText + '</td></tr>';
     });
+    table += '</tbody></table>';
+    $('#output').after(table);
+
 
     console.log('Finding the shortest duration');
     var bestTravelTime = _.min(results, 'duration');

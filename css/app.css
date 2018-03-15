@@ -2,6 +2,7 @@
  * element that contains the map. */
 #map {
   height: 100%;
+  max-height: 800px;
 }
 
 /* Optional: Makes the sample page fill the window. */
