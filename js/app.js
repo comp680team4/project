@@ -1,6 +1,7 @@
 "use strict";
 
 var WINDOW_START = new Date(Date.now() + 0); // current time
+WINDOW_START.setHours(WINDOW_START.getHours() + 1); // Set to the next hour
 WINDOW_START.setMinutes(0); // Set the minutes to 0
 WINDOW_START.setSeconds(0); // Set the seconds to 0
 var WINDOW_END = new Date(WINDOW_START.valueOf() + (60 * 60 * 1000 * 72)); // 72 hours from now
