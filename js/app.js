@@ -1,7 +1,9 @@
 "use strict";
 
 var WINDOW_START = new Date(Date.now() + 0); // current time
-var WINDOW_END = new Date(Date.now() + (60 * 60 * 1000 * 72)); // 72 hours from now
+WINDOW_START.setMinutes(0); // Set the minutes to 0
+WINDOW_START.setSeconds(0); // Set the seconds to 0
+var WINDOW_END = new Date(WINDOW_START.valueOf() + (60 * 60 * 1000 * 72)); // 72 hours from now
 var WINDOW_INCREMENT = 60 * 60 * 1000; // 1 hour in milliseconds
 var DATETIME_FORMAT = 'dddd, MMMM Do [at] h:mm a';
 var HOUR_START = 6; // earliest time to start trip
