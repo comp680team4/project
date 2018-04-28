@@ -143,6 +143,52 @@ function runAlgorithm(directionsService, directionsDisplay) {
 }
 
 var map;
+var markerStartLocation;
+var markerEndLocation;
+
+/**
+ * Update a marker
+ *
+ * @param {google.maps.Marker} marker
+ * @param {google.maps.Place} place
+ * @param {string} label
+ * @returns {google.maps.Marker} marker
+ */
+function updateMarker(marker, place, label) {
+  if (marker) {
+    marker.setMap(null);
+  }
+  return new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    label: label
+  });
+}
+
+/**
+ * Listener for autocomplete place_changed event
+ *
+ * Based on https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete
+ */
+function autocompletePlaceChangedListener(autocomplete, map, label) {
+  var place = autocomplete.getPlace();
+  if (!place.geometry) {
+    // User entered the name of a Place that was not suggested and
+    // pressed the Enter key, or the Place Details request failed.
+    window.alert("No details available for input: '" + place.name + "'");
+    return;
+  }
+
+  var bounds = map.getBounds();
+  bounds = bounds.extend(place.geometry.location);
+  map.fitBounds(bounds);
+
+  if (label === 'A') {
+    markerStartLocation = updateMarker(markerStartLocation, place, label);
+  } else {
+    markerEndLocation = updateMarker(markerEndLocation, place, label);
+  }
+}
 
 /**
  * Initialize the Google Map
@@ -152,7 +198,8 @@ var map;
 function initMap() {
   var directionsService = new google.maps.DirectionsService;
   var directionsDisplay = new google.maps.DirectionsRenderer;
-  var map = new google.maps.Map(document.getElementById('map'), {
+
+  map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 34.2409701, lng: -118.5277711},
     zoom: 17
   });
@@ -160,9 +207,22 @@ function initMap() {
 
   var runAlgorithmHandler = function() {
     runAlgorithm(directionsService, directionsDisplay);
-  }
+  };
 
   document.getElementById('runButton').addEventListener('click', runAlgorithmHandler);
+
+  var autocompleteStartLocation = new google.maps.places.Autocomplete(
+    (document.getElementById('start')), {});
+  var autocompleteEndLocation = new google.maps.places.Autocomplete(
+    (document.getElementById('end')), {});
+
+  autocompleteStartLocation.addListener('place_changed', function () {
+    autocompletePlaceChangedListener(autocompleteStartLocation, map, 'A');
+  });
+
+  autocompleteEndLocation.addListener('place_changed', function () {
+    autocompletePlaceChangedListener(autocompleteEndLocation, map, 'B');
+  });
 
 //   // Show traffic layer
 //   // var trafficLayer = new google.maps.TrafficLayer();
