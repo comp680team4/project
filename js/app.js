@@ -38,7 +38,7 @@ function getDuration(response) {
  */
 function getEstimatedTravelTime(directionsService, startLocation, endLocation, dateTime) {
   console.log('Getting estimated travel time for a ' + moment(dateTime).format(DATETIME_FORMAT) + ' departure');
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     directionsService.route({
       origin: startLocation,
       destination: endLocation,
@@ -48,7 +48,7 @@ function getEstimatedTravelTime(directionsService, startLocation, endLocation, d
         departureTime: dateTime,
         trafficModel: 'bestguess'
       }
-    }, function(response, status) {
+    }, function (response, status) {
       if (status === 'OK') {
         console.log('Got the estimated travel time for a ' + moment(dateTime).format(DATETIME_FORMAT) + ' departure');
 
@@ -60,16 +60,16 @@ function getEstimatedTravelTime(directionsService, startLocation, endLocation, d
           durationText: getDuration(response).text
         });
         // resolve(response);
-        } else if (status === 'OVER_QUERY_LIMIT') {
-          console.error('Over query limit');
-          // Temporarily resolve the promise so that Promise.all doesn't fail
-          resolve({
-            dateTime: dateTime,
-            response: {},
-            duration: Infinity,
-            durationText: 'Infinity'
-          });
-        } else {
+      } else if (status === 'OVER_QUERY_LIMIT') {
+        console.error('Over query limit');
+        // Temporarily resolve the promise so that Promise.all doesn't fail
+        resolve({
+          dateTime: dateTime,
+          response: {},
+          duration: Infinity,
+          durationText: 'Infinity'
+        });
+      } else {
         // else reject with status
         reject(status);
       }
@@ -80,7 +80,7 @@ function getEstimatedTravelTime(directionsService, startLocation, endLocation, d
 function showDebugTable(results) {
   console.log('Departure time\t\t\t\t\t\t\tDuration');
   var table = '<table id="debugTable" class="table table-sm table-bordered table-striped table-hover"><thead class="thead-dark"><tr><th scope="col">Departure time</th><th scope="col">Duration</th></tr></thead><tbody>';
-  results.forEach(function(result) {
+  results.forEach(function (result) {
     console.log(moment(result.dateTime).format(DATETIME_FORMAT) + '\t\t\t\t' + result.durationText);
     table += '<tr><td>' + moment(result.dateTime).format('L - LT') + '</td><td>' + result.durationText + '</td></tr>';
   });
@@ -106,40 +106,40 @@ function runAlgorithm(directionsService, directionsDisplay) {
   console.log("End location:\t" + endLocation);
 
   $.ajax({
-     url: API_ENDPOINT + "getShortestTravelTime",
-     method: "GET",
-     data: {
-       "startLocation": startLocation,
-       "endLocation": endLocation,
-     }
-   })
-   .done(function(results) {
-     console.log('Results');
-     console.log(results);
+    url: API_ENDPOINT + "getShortestTravelTime",
+    method: "GET",
+    data: {
+      "startLocation": startLocation,
+      "endLocation": endLocation,
+    }
+  })
+    .done(function (results) {
+      console.log('Results');
+      console.log(results);
 
-     console.log('Finding the shortest duration');
-     var bestTravelTime = _.min(results, 'duration');
-     console.log(bestTravelTime);
+      console.log('Finding the shortest duration');
+      var bestTravelTime = _.min(results, 'duration');
+      console.log(bestTravelTime);
 
-     // Note: Can't use directionsDisplay.setDirections(bestTravelTime.response)
-     // since the Google Maps Web API response is not compatible with DirectionsDisplay
-     getEstimatedTravelTime(directionsService, startLocation, endLocation, new Date(bestTravelTime.dateTime))
-     .then(function(output) {
-       console.log(output);
-       directionsDisplay.setDirections(output.response);
+      // Note: Can't use directionsDisplay.setDirections(bestTravelTime.response)
+      // since the Google Maps Web API response is not compatible with DirectionsDisplay
+      getEstimatedTravelTime(directionsService, startLocation, endLocation, new Date(bestTravelTime.dateTime))
+        .then(function (output) {
+          console.log(output);
+          directionsDisplay.setDirections(output.response);
 
-       showDebugTable(results);
+          showDebugTable(results);
 
-       // directionsDisplay.setDirections(bestTravelTime.response);
-       $('#output').html('<div class="alert alert-success">The best time to leave is <strong>' + moment(bestTravelTime.dateTime).format(DATETIME_FORMAT) + '</strong>. Your travel time will be ' + bestTravelTime.durationText + ' with traffic.</div>');
-     });
-   })
-   .fail(function(jqXHR, textStatus, o) {
-     // catch any error that happened along the way
-     console.error("ERROR: " + textStatus);
-     console.log(jqXHR);
-     $('#output').html('<div class="alert alert-danger">Uh oh: ' + textStatus + '</div>');
-   });
+          // directionsDisplay.setDirections(bestTravelTime.response);
+          $('#output').html('<div class="alert alert-success">The best time to leave is <strong>' + moment(bestTravelTime.dateTime).format(DATETIME_FORMAT) + '</strong>. Your travel time will be ' + bestTravelTime.durationText + ' with traffic.</div>');
+        });
+    })
+    .fail(function (jqXHR, textStatus, o) {
+      // catch any error that happened along the way
+      console.error("ERROR: " + textStatus);
+      console.log(jqXHR);
+      $('#output').html('<div class="alert alert-danger">Uh oh: ' + textStatus + '</div>');
+    });
 }
 
 var map;
@@ -200,12 +200,12 @@ function initMap() {
   var directionsDisplay = new google.maps.DirectionsRenderer;
 
   map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: 34.2409701, lng: -118.5277711},
+    center: { lat: 34.2409701, lng: -118.5277711 },
     zoom: 17
   });
   directionsDisplay.setMap(map);
 
-  var runAlgorithmHandler = function() {
+  var runAlgorithmHandler = function () {
     runAlgorithm(directionsService, directionsDisplay);
   };
 
@@ -224,18 +224,18 @@ function initMap() {
     autocompletePlaceChangedListener(autocompleteEndLocation, map, 'B');
   });
 
-//   // Show traffic layer
-//   // var trafficLayer = new google.maps.TrafficLayer();
-//   // trafficLayer.setMap(map);
-//
-//   var onChangeHandler = function() {
-//     console.log('Start or end location changed');
-//     calculateAndDisplayRoute(directionsService, directionsDisplay);
-//   };
-//
-//   // Automatically get estimated travel time when text fields are changed
-//   // document.getElementById('start').addEventListener('change', onChangeHandler); // alternatively use "input" event
-//   // document.getElementById('end').addEventListener('change', onChangeHandler);
-//
-//   document.getElementById('runButton').addEventListener('click', onChangeHandler);
+  //   // Show traffic layer
+  //   // var trafficLayer = new google.maps.TrafficLayer();
+  //   // trafficLayer.setMap(map);
+  //
+  //   var onChangeHandler = function() {
+  //     console.log('Start or end location changed');
+  //     calculateAndDisplayRoute(directionsService, directionsDisplay);
+  //   };
+  //
+  //   // Automatically get estimated travel time when text fields are changed
+  //   // document.getElementById('start').addEventListener('change', onChangeHandler); // alternatively use "input" event
+  //   // document.getElementById('end').addEventListener('change', onChangeHandler);
+  //
+  //   document.getElementById('runButton').addEventListener('click', onChangeHandler);
 }
