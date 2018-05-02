@@ -93,6 +93,7 @@ function getShortestTravelTime(startLocation, endLocation, timeWindow) {
     start: roundToNextHour(Date.now()), // current time
     end: new Date(roundToNextHour(Date.now()).valueOf() + (60 * 60 * 1000 * 24 * 3)), // 3 days from now
     increment: 60 * 60 * 1000, // 1 hour
+    hourFilter: false,
     hourStart: 6, // earliest time to start trip
     hourEnd: 20 // latest time to start trip
   };
@@ -105,7 +106,7 @@ function getShortestTravelTime(startLocation, endLocation, timeWindow) {
     var sequence = []; // Sequence of getEstimatedTravelTime promises
 
     while (currentDateTime <= timeWindow.end) {
-      if (currentDateTime.getHours() >= timeWindow.hourStart && currentDateTime.getHours() <= timeWindow.hourEnd) {
+      if (!timeWindow.hourFilter || currentDateTime.getHours() >= timeWindow.hourStart && currentDateTime.getHours() <= timeWindow.hourEnd) {
         sequence.push(getEstimatedTravelTime(startLocation, endLocation, currentDateTime));
       }
       currentDateTime = new Date(currentDateTime.getTime() + timeWindow.increment);
