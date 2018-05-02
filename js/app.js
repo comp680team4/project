@@ -1,11 +1,18 @@
+/* global _, $, google, moment */
 "use strict";
 
 var API_ENDPOINT = 'https://comp680team4.herokuapp.com/api/';
+var DEBUG = false;
 
 // If running locally, use the local API endpoint
 if (window.location.href === 'http://localhost:8888/') {
   API_ENDPOINT = 'http://localhost:8888/api/';
 }
+
+if (DEBUG) {
+  API_ENDPOINT += 'test/';
+}
+
 // var WINDOW_START = new Date(Date.now() + 0); // current time
 // WINDOW_START.setHours(WINDOW_START.getHours() + 1); // Set to the next hour
 // WINDOW_START.setMinutes(0); // Set the minutes to 0
@@ -14,8 +21,8 @@ if (window.location.href === 'http://localhost:8888/') {
 // var WINDOW_END = new Date(WINDOW_START.valueOf() + (60 * 60 * 1000 * 72)); // 72 hours from now
 // var WINDOW_INCREMENT = 60 * 60 * 1000; // 1 hour in milliseconds
 var DATETIME_FORMAT = 'dddd, MMMM Do [at] h:mm a';
-// var HOUR_START = 6; // earliest time to start trip
-// var HOUR_END = 20; // latest time to start trip
+var HOUR_START = 6; // earliest time to start trip
+var HOUR_END = 20; // latest time to start trip
 
 /**
  * Get the duration (with traffic) from a DirectionsResult object
@@ -100,6 +107,7 @@ function runAlgorithm(directionsService, directionsDisplay) {
   var endLocation = document.getElementById('end').value;
 
   $('#output').html('<div class="alert alert-secondary">Running...</div>');
+  $('body').addClass('running');
 
   console.log("Running algorithm");
   console.log("Start location:\t" + startLocation);
@@ -121,17 +129,40 @@ function runAlgorithm(directionsService, directionsDisplay) {
       var bestTravelTime = _.min(results, 'duration');
       console.log(bestTravelTime);
 
+      var startTime = new Date(bestTravelTime.dateTime);
+
+      if (DEBUG) {
+        // Ensure startTime is a future value 
+        startTime = new Date(Date.now());
+      }
+
       // Note: Can't use directionsDisplay.setDirections(bestTravelTime.response)
       // since the Google Maps Web API response is not compatible with DirectionsDisplay
-      getEstimatedTravelTime(directionsService, startLocation, endLocation, new Date(bestTravelTime.dateTime))
+      getEstimatedTravelTime(directionsService, startLocation, endLocation, startTime)
         .then(function (output) {
+          $('body').addClass('results').removeClass('running');
+          // $('#map').addClass('small');
           console.log(output);
+
+          // Remove manually added start and end location markers
+          if (markerStartLocation) {
+            markerStartLocation.setMap(null);
+          }
+          if (markerEndLocation) {
+            markerEndLocation.setMap(null);
+          }
+
           directionsDisplay.setDirections(output.response);
 
-          showDebugTable(results);
+          // showDebugTable(_.first(_.sortBy(results, 'duration'),5));
+          // showDebugTable(results);
+          drawChart(results);
 
-          // directionsDisplay.setDirections(bestTravelTime.response);
-          $('#output').html('<div class="alert alert-success">The best time to leave is <strong>' + moment(bestTravelTime.dateTime).format(DATETIME_FORMAT) + '</strong>. Your travel time will be ' + bestTravelTime.durationText + ' with traffic.</div>');
+          $('#output').html('<div class="alert alert-success">The best time to leave is <strong>' + moment(bestTravelTime.dateTime).format(DATETIME_FORMAT) + '</strong>.<br>Your travel time will be ' + bestTravelTime.durationText + ' with traffic.</div>');
+
+
+        }, function (err) {
+          $('#output').html('<div class="alert alert-danger">Uh oh: ' + err + '</div>');
         });
     })
     .fail(function (jqXHR, textStatus, o) {
@@ -172,10 +203,20 @@ function updateMarker(marker, place, label) {
  */
 function autocompletePlaceChangedListener(autocomplete, map, label) {
   var place = autocomplete.getPlace();
+  var selector = '';
+
+  if (label === 'A') {
+    selector = '#start';
+  } else {
+    selector = '#end';
+  }
+
   if (!place.geometry) {
     // User entered the name of a Place that was not suggested and
     // pressed the Enter key, or the Place Details request failed.
-    window.alert("No details available for input: '" + place.name + "'");
+    // window.alert("No details available for input: '" + place.name + "'");
+    $('.invalid-feedback', $(selector).parent()).remove();
+    $(selector).addClass('is-invalid').after('<div class="invalid-feedback">Unknown location. Please choose a suggestion from the autocomplete.</div>');
     return;
   }
 
@@ -188,6 +229,115 @@ function autocompletePlaceChangedListener(autocomplete, map, label) {
   } else {
     markerEndLocation = updateMarker(markerEndLocation, place, label);
   }
+  $(selector).removeClass('is-invalid').addClass('is-valid');
+}
+
+/**
+ * Draw a chart of the trip durations
+ *
+ * @param {object} data
+ */
+function drawChart(data) {
+  var dataTable = new google.visualization.DataTable();
+  dataTable.addColumn('datetime', 'Departure Time');
+  dataTable.addColumn('number', 'Duration (minutes)');
+  dataTable.addColumn({ type: 'string', role: 'style' });
+
+  var bestTravelTime = _.min(data, 'duration');
+  var apiDataTable = [];
+  data.forEach(response => {
+    var style = '';
+    var responseDateTime = new Date(response.dateTime);
+    if (responseDateTime.getHours() < HOUR_START || responseDateTime.getHours() > HOUR_END) {
+      style = 'fill-color: gray';
+    }
+    if (response.dateTime === bestTravelTime.dateTime) {
+      style = 'red';
+    }
+    apiDataTable.push([responseDateTime, round(response.duration / 60.0, 1), style]);
+  });
+
+  var minDuration = round(bestTravelTime.duration / 60.0, 1);
+  var maxDuration = round(_.max(data, 'duration').duration / 60.0, 1);
+
+  dataTable.addRows(apiDataTable);
+  // var dataTable = new google.visualization.arrayToDataTable(apiDataTable);
+
+
+  var options = {
+    // title: 'Departure Time',
+    explorer: {},
+    animation: {
+      duration: 1000,
+      easing: 'out',
+      startup: true
+    },
+    chartArea: {
+      width: '85%',
+      top: '5%',
+      left: '5%',
+      right: '1%',
+      bottom: '15%',
+    },
+    hAxis: {
+      title: 'Departure Day/Time',
+      format: 'MMM d ha',
+      gridlines: {
+        count: -1,
+        units: {
+          days: { format: ['MMM d'] },
+          hours: { format: ['HH:mm', 'ha'] },
+        }
+      },
+      minorGridlines: {
+        units: {
+          hours: { format: ['ha'] },
+          minutes: { format: ['HH:mm a Z', ':mm'] }
+        }
+      }
+    },
+    vAxis: {
+      title: 'Travel Time (minutes)',
+      viewWindow: {
+        min: minDuration - (minDuration * 0.1),
+        max: maxDuration + (maxDuration * 0.05)
+      },
+    },
+    bar: {
+      groupWidth: "85%"
+    },
+    legend: { position: 'none' }
+  };
+
+  $('#graph').removeClass('d-none');
+
+  // var chart = new google.charts.Bar(document.getElementById('graph'));
+  // chart.draw(dataTable, google.charts.Bar.convertOptions(options));
+
+  var chart = new google.visualization.ColumnChart(
+    document.getElementById('graph'));
+
+  chart.draw(dataTable, options);
+
+}
+
+/**
+ * Improved rounding function
+ * Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round#A_better_solution
+ *
+ * @param {number} number 
+ * @param {number} precision 
+ * @returns Rounded number
+ */
+function round(number, precision) {
+  var shift = function (number, precision, reverseShift) {
+    if (reverseShift) {
+      precision = -precision;
+    }
+    var numArray = ("" + number).split("e");
+    return +(numArray[0] + "e" + (numArray[1] ? (+numArray[1] + precision) : precision));
+  };
+  return shift(Math.round(shift(number, precision, false)), precision, true);
 }
 
 /**
@@ -223,6 +373,8 @@ function initMap() {
   autocompleteEndLocation.addListener('place_changed', function () {
     autocompletePlaceChangedListener(autocompleteEndLocation, map, 'B');
   });
+
+  google.charts.load('current', { packages: ['corechart', 'bar'] });
 
   //   // Show traffic layer
   //   // var trafficLayer = new google.maps.TrafficLayer();

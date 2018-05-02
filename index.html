@@ -8,40 +8,40 @@
     <meta name="robots" content="noindex, nofollow">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.1.1/yeti/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
 
     <title>COMP680 Team 4 Project</title>
   </head>
   <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-4">
-          <h1>COMP680 Team 4 Project</h1>
-          <p class="lead">by Mark Kaplan <del>and Wei Lee</del></p>
+    <div class="container-fluid h-100">
+      <div class="row justify-content-center h-100">
+        <div class="col-md-4">
+          <h1>COMP680 Project</h1>
+          <p class="lead">by Team 4 - Mark Kaplan <del>& Wei Lee</del></p>
 
-          <p>This application determines the time of day / day of week that will give you the shortest estimated travel time with traffic for a given trip.</p>
+          <p class="description">This application determines the time of day / day of week that will give you the shortest estimated travel time with traffic for a given trip.</p>
 
           <form>
             <div class="form-group">
               <label for="start">Start</label>
-              <input type="text" class="form-control" id="start" value="California State University, Northridge">
+              <input type="text" class="form-control" id="start" placeholder="Choose starting point">
             </div>
 
             <div class="form-group">
               <label for="end">End</label>
-              <input type="text" class="form-control" id="end" value="University of Southern California">
+              <input type="text" class="form-control" id="end" placeholder="Choose destination">
             </div>
 
             <button class="btn btn-primary" type="button" id="runButton">Run</button>
           </form>
-
-          <div id="output"></div>
           <!-- Left -->
         </div>
-        <div class="col-sm">
+        <div class="col-md-8">
           <!-- Right -->
+          <div id="output"></div>
+          <div id="graph" class="d-none"></div>
           <div id="map"></div>
         </div>
       </div>
@@ -52,8 +52,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script src="js/app.js"></script>
 
